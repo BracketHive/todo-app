@@ -1,1 +1,1 @@
-export type Category = 'work' | 'personal' | 'home'
+export type Category = 'Work' | 'Personal' | 'Home'
