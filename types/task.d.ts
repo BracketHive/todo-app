@@ -1,7 +1,9 @@
+import type { Category } from "./category"
+
 export interface Task {
   id: number
   title: string
-  category: 'work' | 'personal' | 'home'
+  category: Category
   completed: boolean
 }
 
