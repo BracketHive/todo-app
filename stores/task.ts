@@ -4,11 +4,12 @@ import type { Category, Task } from '@/types';
 
 export interface TaskState {
   tasks: Task[]
+  category: Category
 }
 
 export type TaskGetters = {
   loadTasks: (state: TaskState) => Task[]
-  tasksByCategory: (state: TaskState) => (category: Category) => Task[]
+  setCategory: (state: TaskState) => (category: Category) => void
 }
 
 export type TaskActions = {
@@ -21,15 +22,17 @@ export type TaskActions = {
 export const useTasksStore = defineStore<string, TaskState, TaskGetters, TaskActions>('tasks', {
   state: () => ({
     tasks: [],
+    category: 'All',
   }),
 
   getters: {
     loadTasks: (state: TaskState) => {
-      return state.tasks
+      if (state.category === 'All') return state.tasks
+      return state.tasks.filter((task: Task) => task.category === state.category)
     },
 
-    tasksByCategory: (state: TaskState) => (category: Category) => {
-      return state.tasks.filter((task: Task) => task.category === category)
+    setCategory: (state: TaskState) => (category: Category) => {
+      state.category = category
     }
   },
 
