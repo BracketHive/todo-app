@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { useTasksStore } from "@/stores/task"
-import type { Category } from "@/types"
 
-const props = defineProps<{
-  category: Category
-}>()
+const route = useRoute()
+
+const category = route.params.category.charAt(0).toUpperCase() + route.params.category.slice(1)
 
 const tasksStore = useTasksStore()
-
-const filteredTasks = computed(() => tasksStore.tasksByCategory(props.category))
+tasksStore.setCategory(category)
+tasksStore.fetchTasks()
+const filteredTasks = computed(() => tasksStore.loadTasks)
 </script>
 
 <template>
   <div class="max-w-3xl mx-auto p-4 bg-background">
-    <h1 class="text-2xl font-bold">Category: {{ category }}</h1>
-    <div class="space-y-4">
+    <h1 class="text-xl font-bold">{{ category }}</h1>
+    <div class="py-10">
       <TaskItem v-for="task in filteredTasks" :key="task.id" :task="task" />
     </div>
   </div>
