@@ -7,5 +7,5 @@ export default {
       'body': ['"Open Sans", sans-serif'],
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-motion')]
 }
