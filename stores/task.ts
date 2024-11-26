@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { fetchTasks, createTask, deleteTask, updateTaskStatus } from '@/utils/api';
-import type { Category, Task } from '@/types';
+import type { Category, Task, Error } from '@/types';
 
 export interface TaskState {
   tasks: Task[]
@@ -13,10 +13,10 @@ export type TaskGetters = {
 }
 
 export type TaskActions = {
-  fetchTasks: () => void
-  addTask: (newTask: Partial<Task>) => void
-  removeTask: (taskId: number) => void
-  toggleTaskStatus: (taskId: number) => void
+  fetchTasks: () => Promise<Task|Error|undefined>
+  addTask: (newTask: Partial<Task>) => Promise<Task|Error|undefined>
+  removeTask: (taskId: number) =>  Promise<string|Error|undefined>
+  toggleTaskStatus: (taskId: number) => Promise<Task|Error|undefined>
 }
 
 export const useTasksStore = defineStore<string, TaskState, TaskGetters, TaskActions>('tasks', {
@@ -38,28 +38,48 @@ export const useTasksStore = defineStore<string, TaskState, TaskGetters, TaskAct
 
   actions: {
     async fetchTasks() {
-      this.tasks = await fetchTasks();
+      const { data, error } = await fetchTasks();
+
+      if (data) this.tasks = data
+      if (error) return error
     },
     async addTask(newTask: Partial<Task>) {
-      const task = await createTask(newTask);
-      this.tasks.push(task);
+      const { data, error } = await createTask(newTask);
 
-      this.fetchTasks()
+      if (data) {
+        this.fetchTasks()
+        return data
+      }
+
+      if (error) return error
     },
     async removeTask(taskId: number) {
-      await deleteTask(taskId);
-      this.tasks = this.tasks.filter((task) => task.id !== taskId);
+      const { data, error } = await deleteTask(taskId);
 
-      this.fetchTasks()
+      if (data) {
+        this.fetchTasks()
+        return data
+      }
+
+      if (error) return error
     },
     async toggleTaskStatus(taskId: number) {
       const task = this.tasks.find((task) => task.id === taskId);
       if (task) {
-        await updateTaskStatus(taskId, { completed: !task.completed });
-      }
+        const { data, error } = await updateTaskStatus(taskId, { completed: !task.completed });
 
-      this.fetchTasks()
+        if (data) {
+          this.fetchTasks()
+          return data
+        }
+
+        if (error) return error
+      }
     },
+  },
+
+  persist: {
+    pick: ['category'],
   },
 });
 

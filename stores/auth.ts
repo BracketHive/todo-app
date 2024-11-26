@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore, type _GettersTree } from 'pinia';
 
 export interface Login {
   email: string
@@ -15,10 +15,12 @@ export type AuthActions = {
 }
 
 
-export const useAuthStore = defineStore<string, AuthState, AuthActions>('auth', {
+export const useAuthStore = defineStore<string, AuthState, {}, AuthActions>('auth', {
   state: () => ({
     isAuthenticated: false
   }),
+
+  getters: {},
 
   actions: {
     login(credentials: Login) {
@@ -32,6 +34,10 @@ export const useAuthStore = defineStore<string, AuthState, AuthActions>('auth', 
     logout() {
       this.isAuthenticated = false;
     },
+  },
+
+  persist: {
+    pick: ['isAuthenticated'],
   },
 });
 
