@@ -6,13 +6,46 @@ const props = defineProps<{
   task: Task;
 }>();
 
+const modal = ref({
+  title: 'Delete task',
+  message: `Are you sure that you want to delete "${props.task.title}"?`,
+  hasError: false
+})
+
 const tasksStore = useTasksStore();
 const modalVisible = ref(false)
 const closeModal = () => modalVisible.value = false
 
-const toggleStatus = () => tasksStore.toggleTaskStatus(props.task.id);
+const toggleStatus = () => {
+  tasksStore.toggleTaskStatus(props.task.id).then((res) => {
+    // @ts-ignore
+    if (res?.status === 422) {
+      modal.value.title = 'Problem while updating task'
+      // @ts-ignore
+      modal.value.message = res?.response.data
+      modal.value.hasError = true
+    }
+
+    setTimeout(() => {
+      modalVisible.value = false
+    }, 3000)
+  })
+}
 const deleteTask = () => {
-  tasksStore.removeTask(props.task.id);
+  tasksStore.removeTask(props.task.id).then((res) => {
+    // @ts-ignore
+    if (res?.status === 422) {
+      modal.value.title = 'Problem while deleting task'
+      // @ts-ignore
+      modal.value.message = res?.response.data
+      modal.value.hasError = true
+    }
+
+    setTimeout(() => {
+      modalVisible.value = false
+    }, 3000)
+  })
+
   closeModal()
 }
 </script>
@@ -33,12 +66,12 @@ const deleteTask = () => {
 
     <Modal v-if="modalVisible" :closable="true" class="transition-all ease-in-out delay-150" @close="closeModal">
       <template #header>
-        <b class="text-red-500">Delete task</b>
+        <b class="text-red-500">{{ modal.title }}</b>
       </template>
       <template #body>
-        <span>Are you sure that you want to delete "{{ task.title }}"?</span>
+        <span>{{ modal.message }}</span>
       </template>
-      <template #footer>
+      <template v-if="!modal.hasError" #footer>
         <div class="flex w-full justify-end items-center gap-5">
           <button class="h-10 bg-red-500 text-white px-3 hover:bg-red-700" @click="deleteTask">Delete</button>
           <button class="h-10 bg-gray-200 px-3 hover:bg-gray-300" @click="closeModal">Cancel</button>
